@@ -1,7 +1,9 @@
 # front-locker
-A userful locker for frontend.
+An userful locker for frontend.
 
-## todo
+## Usage
+
+## Todo
 * [ ] Test Multi-locker Situation  
 * [ ] Add Timeout  
 * [ ] Support Worker  
