@@ -1,5 +1,5 @@
 # front-locker
-A userful locker for frontend.
+An userful locker for frontend.
 
 ## todo
 * [*] Trans to Typescript  
@@ -7,3 +7,6 @@ A userful locker for frontend.
 * [ ] Test Multi-locker Situation  
 * [ ] Add Timeout  
 * [ ] Support Worker  
+
+## Usage
+
