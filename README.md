@@ -2,7 +2,7 @@
 An userful locker for frontend.
 
 ## todo
-* [*] Trans to Typescript  
+* [x] Trans to Typescript  
 * [ ] Write Test  
 * [ ] Test Multi-locker Situation  
 * [ ] Add Timeout  
