@@ -1,16 +1,10 @@
 /**
  * Javascript使用的异步锁
  * 锁住的进程会等待锁释放。
- * 不支持worker。
+ * 暂不支持worker。
  * 一定要注意，如果lock和unlock中间有进程抛异常或死循环会死锁！
  * 请仔细检查lock和unlock之间的代码！！
  */
-
-// declare var setImmediate: (func: CallableFunction) => void
-// @ts-ignore
-if (!setImmediate) {
-  var setImmediate = (func: CallableFunction) => setTimeout(func as any, 0)
-}
 
 export interface ILocker {
   getlockState: () => {
@@ -48,7 +42,7 @@ export const makeLocker = () => {
         lastRunningTime = date;
         lockFrom = date;
         lastLockTime = date;
-        setImmediate(() => resolve());
+        setTimeout(() => resolve());
       }
     });
   const unlock = () =>
@@ -56,12 +50,12 @@ export const makeLocker = () => {
       if (waiting.length > 0) {
         const task = waiting.shift();
         lastRunningTime = new Date();
-        setImmediate(() => task());
+        setTimeout(() => task());
       } else {
         locker = false;
         lockFrom = null;
       }
-      setImmediate(() => resolve());
+      setTimeout(() => resolve());
     });
   /**
    * 清空锁的队列并强制释放锁

@@ -129,8 +129,6 @@ describe('Need testFunc ', () => {
     runTest()
   })
 
-  // TODO: test error
-
   // TODO: test timeout
 })
 
