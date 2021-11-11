@@ -1,19 +1,19 @@
 import base, { exceptArray } from '../testUtils'
 
-import { makeLocker, ILocker } from '../locker';
+import { Locker, makeLocker } from '../locker';
 
-test('Can Generate Locker', () => {
+test('makeLocker Can Generate Locker', () => {
   const locker = makeLocker()
   expect(locker).toBeDefined()
   expect(locker.lock()).toBeInstanceOf(Promise)
   expect(locker.unlock()).toBeInstanceOf(Promise)
   const state = locker.getlockState()
   expect(state).toBeDefined()
-  expect(typeof state.locker).toBe("boolean")
+  expect(typeof state.locked).toBe("boolean")
   expect(typeof state.waiting).toBe("number")
   expect(state.lastRunningTime).toBeInstanceOf(Date)
   expect(state.lastLockTime).toBeInstanceOf(Date)
-  expect(state.lockFrom).toBeInstanceOf(Date)
+  expect(state.lockFrom).toBe(null)
   locker.release()
 });
 
@@ -31,7 +31,7 @@ describe('Need testFunc ', () => {
   })
 
   const wait = (time: number) => new Promise<void>(r => setTimeout(() => r(), time));
-  const testFunc = async (locker: ILocker, time: number, done?: CallableFunction) => {
+  const testFunc = async (locker: Locker, time: number, done?: CallableFunction) => {
     const id = getNewIdVal();
     result.push({ id, time, op: "start" })
     // console.log(`[start] id:${id} time: ${time}`);

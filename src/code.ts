@@ -1,9 +1,9 @@
-import { ILocker, makeLocker } from "./locker"
+import { Locker, makeLocker } from "./locker"
 
 
-let _lookers: {[key: string]: ILocker} = {}
+let _lookers: {[key: string]: Locker} = {}
 
-export const lockCode = async (locker: ILocker | string, func: Function) => {
+export const lockCode = async (locker: Locker | string, func: Function) => {
   
   if (typeof locker === 'string') {
     if (!_lookers[locker]) {

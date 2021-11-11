@@ -6,71 +6,73 @@
  * 请仔细检查lock和unlock之间的代码！！
  */
 
-export interface ILocker {
-  getlockState: () => {
-    locker: boolean
-    waiting: number
-    lastRunningTime: Date
-    lastLockTime: Date
-    lockFrom: Date
-  }
-  lock: () => Promise<void>
-  unlock: () => Promise<void>
-  release: () => void
-}
+export class Locker {
+  locked = false;
+  waiting: any[] = [];
+  lastRunningTime: null | Date = null;
+  lastLockTime: null | Date = null;
+  lockFrom: null | Date = null;
 
-export const makeLocker = () => {
-  let locker = false;
-  let waiting: any[] = [];
-  let lastRunningTime: any = null;
-  let lastLockTime: any = null;
-  let lockFrom: any = null;
-  const getlockState = () => ({
-    locker,
-    waiting: waiting.length,
-    lastRunningTime: new Date(lastRunningTime),
-    lastLockTime: new Date(lastLockTime),
-    lockFrom: new Date(lockFrom)
-  });
-  const lock = () =>
-    new Promise<void>(resolve => {
-      if (locker) {
-        waiting.push(resolve);
+  getlockState() {
+    return {
+      locked: this.locked,
+      waiting: this.waiting.length,
+      lastRunningTime: this.lastRunningTime,
+      lastLockTime: this.lastLockTime,
+      lockFrom: this.lockFrom,
+    }
+  }
+
+  lock() {
+    return new Promise<void>(resolve => {
+      if (this.locked) {
+        this.waiting.push(resolve);
       } else {
-        locker = true;
+        this.locked = true;
         const date = new Date();
-        lastRunningTime = date;
-        lockFrom = date;
-        lastLockTime = date;
+        this.lastRunningTime = date;
+        this.lockFrom = date;
+        this.lastLockTime = date;
         setTimeout(() => resolve());
       }
-    });
-  const unlock = () =>
-    new Promise<void>(resolve => {
-      if (waiting.length > 0) {
-        const task = waiting.shift();
-        lastRunningTime = new Date();
+    })
+  }
+
+  unlock() {
+    return new Promise<void>(resolve => {
+      if (this.waiting.length > 0) {
+        const task = this.waiting.shift();
+        this.lastRunningTime = new Date();
         setTimeout(() => task());
       } else {
-        locker = false;
-        lockFrom = null;
+        this.locked = false;
+        this.lockFrom = null;
       }
       setTimeout(() => resolve());
     });
+  }
+
+
   /**
+   * Remove the waiting list and release the lock
    * 清空锁的队列并强制释放锁
    */
-  const release = () => {
-    locker = false;
-    waiting = [];
+  release() {
+    this.locked = false;
+    this.waiting = [];
   };
 
-  return {
-    getlockState,
-    lock,
-    unlock,
-    release
-  } as ILocker;
-};
 
-export default { makeLocker, }
+  /**
+   * Remove the waiting list and release the lock
+   * 清空锁的队列并强制释放锁
+   */
+  clear() {
+    this.locked = false;
+    this.waiting = [];
+  };
+}
+
+export const makeLocker = () => new Locker()
+
+export default { makeLocker, Locker }
