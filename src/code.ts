@@ -12,11 +12,11 @@ export const lockCode = async (locker: Locker | string, func: Function) => {
     locker = _lookers[locker]
   }
 
-  await locker.lock()
+  const ticket = await locker.lock()
   try {
     return await func()
   } finally {
-    await locker.unlock()
+    await locker.unlock(ticket)
   }
 }
 
