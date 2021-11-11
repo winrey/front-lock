@@ -79,13 +79,4 @@ export const makeLocker = () => {
   } as ILocker;
 };
 
-export const lockCode = async (locker: ILocker, func: Function) => {
-  await locker.lock()
-  try {
-    return await func()
-  } finally {
-    await locker.unlock()
-  }
-}
-
-export default { makeLocker, lockCode,  }
+export default { makeLocker, }

@@ -1,4 +1,6 @@
-import { makeLocker, lockCode } from '../locker';
+import base, { exceptArray } from '../testUtils'
+
+import { makeLocker, ILocker } from '../locker';
 
 test('Can Generate Locker', () => {
   const locker = makeLocker()
@@ -15,34 +17,121 @@ test('Can Generate Locker', () => {
   locker.release()
 });
 
-test('', () => {
-  
+describe('Need testFunc ', () => {
+  // set id
+  let _id = 10000
+  let result: any[] = []
+  const getNewIdVal = () => {
+    return _id += 1
+  }
 
-const test = async () => {
-  const testLocker = makeLocker();
-  const wait = (time: any) => new Promise<void>(r => setTimeout(() => r(), time));
-  const testFunc = async (time: any) => {
-    const id = Math.round(Math.random() * 10000);
-    console.log(`[start] id:${id} time: ${time}`);
-    await testLocker.lock(); // lock必须加await
-    console.log(`[in-lock] id:${id} time: ${time}`);
+  beforeEach(() => {
+    _id = 10000
+    result = []
+  })
+
+  const wait = (time: number) => new Promise<void>(r => setTimeout(() => r(), time));
+  const testFunc = async (locker: ILocker, time: number, done?: CallableFunction) => {
+    const id = getNewIdVal();
+    result.push({ id, time, op: "start" })
+    // console.log(`[start] id:${id} time: ${time}`);
+    await locker.lock(); // lock必须加await
+    result.push({ id, time, op: "in-lock" })
+    // console.log(`[in-lock] id:${id} time: ${time}`);
     await wait(time);
-    console.log(`[out-lock] id:${id} time: ${time}`);
-    await testLocker.unlock(); // unlock加不加await都可
-    console.log(`[end] id:${id} time: ${time}`);
+    result.push({ id, time, op: "out-lock" })
+    // console.log(`[out-lock] id:${id} time: ${time}`);
+    await locker.unlock(); // unlock加不加await都可
+    result.push({ id, time, op: "end" })
+    // console.log(`[end] id:${id} time: ${time}`);
+    if (done) done()
   };
 
-  testFunc(3000);
-  testFunc(3001);
-  testFunc(3002);
-  await wait(5000);
-  testFunc(3000);
-  await wait(15000);
-  testFunc(3000);
-  await wait(4000);
-  testFunc(3000);
-};
+  const doneAndCheck = (done: CallableFunction, compared: any[]) => () => {
+    // expect(result).toEqualArray()
+    exceptArray(result, compared)
+    // console.log(result)
+    done()
+  }
 
-// test();
+
+  test('Single Locker Simple Test', (done) => {
+    const testLocker = makeLocker();
+    const compared = [
+      { id: 10001, time: 100, op: 'start' },
+      { id: 10001, time: 100, op: 'in-lock' },
+      { id: 10001, time: 100, op: 'out-lock' },
+      { id: 10001, time: 100, op: 'end' }
+    ]
+    const runTest = async () => {
+      testFunc(testLocker, 100, doneAndCheck(done, compared));
+    }
+
+    runTest()
+  })
+
+  test('Single Locker Test', (done) => {
+    const testLocker = makeLocker();
+    const compared = [
+      { id: 10001, time: 300, op: 'start' },
+      { id: 10002, time: 301, op: 'start' },
+      { id: 10003, time: 302, op: 'start' },
+      { id: 10001, time: 300, op: 'in-lock' },
+      { id: 10001, time: 300, op: 'out-lock' },
+      { id: 10002, time: 301, op: 'in-lock' },
+      { id: 10001, time: 300, op: 'end' },
+      { id: 10004, time: 300, op: 'start' },
+      { id: 10002, time: 301, op: 'out-lock' },
+      { id: 10003, time: 302, op: 'in-lock' },
+      { id: 10002, time: 301, op: 'end' },
+      { id: 10003, time: 302, op: 'out-lock' },
+      { id: 10004, time: 300, op: 'in-lock' },
+      { id: 10003, time: 302, op: 'end' },
+      { id: 10004, time: 300, op: 'out-lock' },
+      { id: 10004, time: 300, op: 'end' },
+      { id: 10005, time: 300, op: 'start' },
+      { id: 10005, time: 300, op: 'in-lock' },
+      { id: 10005, time: 300, op: 'out-lock' },
+      { id: 10005, time: 300, op: 'end' },
+      { id: 10006, time: 300, op: 'start' },
+      { id: 10007, time: 300, op: 'start' },
+      { id: 10006, time: 300, op: 'in-lock' },
+      { id: 10008, time: 300, op: 'start' },
+      { id: 10009, time: 300, op: 'start' },
+      { id: 10006, time: 300, op: 'out-lock' },
+      { id: 10007, time: 300, op: 'in-lock' },
+      { id: 10006, time: 300, op: 'end' },
+      { id: 10007, time: 300, op: 'out-lock' },
+      { id: 10008, time: 300, op: 'in-lock' },
+      { id: 10007, time: 300, op: 'end' },
+      { id: 10008, time: 300, op: 'out-lock' },
+      { id: 10009, time: 300, op: 'in-lock' },
+      { id: 10008, time: 300, op: 'end' },
+      { id: 10009, time: 300, op: 'out-lock' },
+      { id: 10009, time: 300, op: 'end' }
+    ]
+    const runTest = async () => {
+      testFunc(testLocker, 300);
+      testFunc(testLocker, 301);
+      testFunc(testLocker, 302);
+      await wait(500);
+      testFunc(testLocker, 300);
+      await wait(1500);
+      testFunc(testLocker, 300);
+      await wait(400);
+      testFunc(testLocker, 300);
+      testFunc(testLocker, 300);
+      await wait(200);
+      testFunc(testLocker, 300);
+      testFunc(testLocker, 300, doneAndCheck(done, compared));
+    }
+
+    runTest()
+  })
+
+  // TODO: test error
+
+  // TODO: test timeout
 })
+
 
