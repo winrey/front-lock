@@ -1,23 +1,36 @@
-import { Locker, makeLocker } from "./locker"
+import { TicketUnvalidError } from "./error";
+import { ILockerOptions, Locker, makeLocker } from "./locker"
 
 
-let _lookers: {[key: string]: Locker} = {}
+let _lockers: {[key: string | symbol | number]: Locker} = {}
 
-export const lockCode = async (locker: Locker | string, func: Function) => {
-  
-  if (typeof locker === 'string') {
-    if (!_lookers[locker]) {
-      _lookers[locker] = makeLocker()
+export const lock = async <T>(
+  locker: Locker | string | symbol | number, 
+  func: (() => T) | (() => Promise<T>) | Promise<T>, 
+  config: ILockerOptions = {}
+) => {
+  const { timeout } = config;
+
+  if (
+    typeof locker === 'string' || 
+    typeof locker === 'symbol' ||
+    typeof locker === 'number' 
+  ) {
+    if (!_lockers[locker]) {
+      _lockers[locker] = new Locker(config)
     }
-    locker = _lookers[locker]
+    locker = _lockers[locker]
   }
 
-  const ticket = await locker.lock()
+  const ticket = await locker.lock(timeout)
   try {
+    if (func instanceof Promise) {
+      return await func
+    }
     return await func()
   } finally {
     await locker.unlock(ticket)
   }
 }
 
-export default { lockCode }
+export default { lock }

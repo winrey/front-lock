@@ -1,4 +1,5 @@
 import { Locker, makeLocker } from '../locker';
+import { wait } from '../wait';
 
 test('makeLocker Can Generate Locker', async () => {
   const locker = makeLocker()
@@ -31,7 +32,6 @@ describe('Need testFunc ', () => {
     result = []
   })
 
-  const wait = (time: number) => new Promise<void>(r => setTimeout(() => r(), time));
   const testFunc = async (locker: Locker, time: number, done?: CallableFunction) => {
     const id = getNewIdVal();
     result.push({ id, time, op: "start" })
@@ -53,7 +53,7 @@ describe('Need testFunc ', () => {
   }
   const doneAndCheck = (done: CallableFunction, compared: any[]) => () => {
     // expect(result).toEqualArray()
-    console.log(result)
+    // console.log(result)
     exceptArray(result, compared)
     done()
   }
@@ -83,11 +83,11 @@ describe('Need testFunc ', () => {
       { id: 10003, time: 100, op: 'start' },
       { id: 10001, time: 100, op: 'in-lock' },
       { id: 10001, time: 100, op: 'out-lock' },
-      { id: 10002, time: 100, op: 'in-lock' },
       { id: 10001, time: 100, op: 'end' },
+      { id: 10002, time: 100, op: 'in-lock' },
       { id: 10002, time: 100, op: 'out-lock' },
-      { id: 10003, time: 100, op: 'in-lock' },
       { id: 10002, time: 100, op: 'end' },
+      { id: 10003, time: 100, op: 'in-lock' },
       { id: 10003, time: 100, op: 'out-lock' },
       { id: 10003, time: 100, op: 'end' }
     ]
@@ -109,15 +109,15 @@ describe('Need testFunc ', () => {
       { id: 10003, time: 302, op: 'start' },
       { id: 10001, time: 300, op: 'in-lock' },
       { id: 10001, time: 300, op: 'out-lock' },
-      { id: 10002, time: 301, op: 'in-lock' },
       { id: 10001, time: 300, op: 'end' },
+      { id: 10002, time: 301, op: 'in-lock' },
       { id: 10004, time: 300, op: 'start' },
       { id: 10002, time: 301, op: 'out-lock' },
-      { id: 10003, time: 302, op: 'in-lock' },
       { id: 10002, time: 301, op: 'end' },
+      { id: 10003, time: 302, op: 'in-lock' },
       { id: 10003, time: 302, op: 'out-lock' },
-      { id: 10004, time: 300, op: 'in-lock' },
       { id: 10003, time: 302, op: 'end' },
+      { id: 10004, time: 300, op: 'in-lock' },
       { id: 10004, time: 300, op: 'out-lock' },
       { id: 10004, time: 300, op: 'end' },
       { id: 10005, time: 300, op: 'start' },
@@ -130,14 +130,14 @@ describe('Need testFunc ', () => {
       { id: 10008, time: 300, op: 'start' },
       { id: 10009, time: 300, op: 'start' },
       { id: 10006, time: 300, op: 'out-lock' },
-      { id: 10007, time: 300, op: 'in-lock' },
       { id: 10006, time: 300, op: 'end' },
+      { id: 10007, time: 300, op: 'in-lock' },
       { id: 10007, time: 300, op: 'out-lock' },
-      { id: 10008, time: 300, op: 'in-lock' },
       { id: 10007, time: 300, op: 'end' },
+      { id: 10008, time: 300, op: 'in-lock' },
       { id: 10008, time: 300, op: 'out-lock' },
-      { id: 10009, time: 300, op: 'in-lock' },
       { id: 10008, time: 300, op: 'end' },
+      { id: 10009, time: 300, op: 'in-lock' },
       { id: 10009, time: 300, op: 'out-lock' },
       { id: 10009, time: 300, op: 'end' }
     ]
@@ -163,5 +163,4 @@ describe('Need testFunc ', () => {
 
   // TODO: test timeout
 })
-
 
