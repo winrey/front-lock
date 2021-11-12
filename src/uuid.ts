@@ -1,3 +1,5 @@
+// @ts-ignore
+
 export const uuid = function () {
   const s = [];
   const hexDigits = "0123456789abcdef";
