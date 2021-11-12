@@ -37,7 +37,7 @@ export interface ILockerOptions {
 
 // support ES5
 if (!Symbol) {
-  Symbol = uuid as any
+  Symbol = uuid as any;
 }
 
 export class Locker implements ILockerOptions {
