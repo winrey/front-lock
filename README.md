@@ -1,5 +1,5 @@
 # front-locker
-An userful async locker🔐 for frontend (web). 
+An useful async locker🔐 for frontend (web). 
 
 _No need for Database._
 
