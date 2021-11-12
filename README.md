@@ -1,7 +1,12 @@
 # front-locker
-An userful async locker🔐 for frontend.
+An userful async locker🔐 for frontend (web). 
+
+_No need for Database._
+
 Also available on node.js.
 (But it doesn't work on the node.js program who use  multi-process)
+
+[中文文档](https://github.com/winrey/front-locker/blob/main/README.zh.md)
 
 ## Install
 ```bash
