@@ -6,11 +6,11 @@
  * 请仔细检查lock和unlock之间的代码！！
  */
 
-import { LockerClearError, LockerTimeoutError, TicketUnvalidError, WrongTicketError } from './error';
+import { LockClearError, LockTimeoutError, TicketUnvalidError, WrongTicketError } from './error';
 import { uuid } from './uuid';
 
 export type LockTicketType = symbol | string;
-export interface ILockerOptions {
+export interface ILockOptions {
   /**
    * ContinueExcute if the ticket has been released or timeout.
    * Default to true. It will throw TicketExpiredError if false.
@@ -24,7 +24,7 @@ export interface ILockerOptions {
    */
   timeout?: number;
   /**
-   * Whether throw Error when timeout(LockerTimeoutError) or clear(LockerClearError). Default to true.
+   * Whether throw Error when timeout(LockTimeoutError) or clear(LockClearError). Default to true.
    * 是否在超时和锁清空时为lock抛出错误，默认为真
    */
   throwLockError?: boolean;
@@ -40,7 +40,7 @@ if (!Symbol) {
   Symbol = uuid as any;
 }
 
-export class Locker implements ILockerOptions {
+export class Lock implements ILockOptions {
   continueExcute = true;
   timeout = 0;
   throwLockError = true;
@@ -67,7 +67,7 @@ export class Locker implements ILockerOptions {
    *
    * @param options
    */
-  constructor(options: ILockerOptions = {}) {
+  constructor(options: ILockOptions = {}) {
     const { continueExcute, timeout, throwLockError, throwUnlockError } = options;
     this.continueExcute = continueExcute ?? this.continueExcute;
     this.timeout = timeout ?? this.timeout;
@@ -94,7 +94,7 @@ export class Locker implements ILockerOptions {
         const { reject } = this.promises[ticket];
         if (this.release(ticket)) {
           if (this.throwLockError) {
-            reject(new LockerTimeoutError());
+            reject(new LockTimeoutError());
           }
           return;
         }
@@ -104,10 +104,10 @@ export class Locker implements ILockerOptions {
 
   /**
    * Use at the start of the code need to lock.
-   * This will lock the locker, or waiting here if the lock is busy.
+   * This will lock the Lock, or waiting here if the lock is busy.
    * 用在需要锁定的代码开始的地方。
    * 当锁被占用时，将在这里等待。
-   * @params timeout by microsecond. Default to the value of the locker. 以毫秒计的超时时间。默认为使用锁的默认值
+   * @params timeout by microsecond. Default to the value of the Lock. 以毫秒计的超时时间。默认为使用锁的默认值
    * @returns Return the ticket to unlock 返回用于解锁的ticket
    */
   lock(timeout?: number) {
@@ -141,7 +141,7 @@ export class Locker implements ILockerOptions {
 
   /**
    * Use at the end of the code need to lock
-   * This will unlock the locker and call the next in the waiting list if there are
+   * This will unlock the Lock and call the next in the waiting list if there are
    * 用于需要锁定的代码结束的地方
    * 这里会视为异步锁结束（并解锁），并将队列下一个加入js队列
    * @param ticket give the value return by lock()
@@ -179,7 +179,7 @@ export class Locker implements ILockerOptions {
 
   /**
    * Call the next in the waiting list (if has) without waiting.
-   * Caution: This won't stop the async code who lock the locker.
+   * Caution: This won't stop the async code who lock the Lock.
    * Do not use except you know what you are doing.
    * 不等待当前返回，直接调用下一个。
    * 但是注意，这不会阻止异步返回后代码继续执行。
@@ -208,7 +208,7 @@ export class Locker implements ILockerOptions {
     });
     if (this.throwLockError) {
       Object.values<{ reject: (err: any) => void }>(this.promises as any).forEach(({ reject }) => {
-        setTimeout(() => reject(new LockerClearError()));
+        setTimeout(() => reject(new LockClearError()));
       });
     }
     this.timeoutHandlers = {};
@@ -216,6 +216,6 @@ export class Locker implements ILockerOptions {
   }
 }
 
-export const makeLocker = (config?: ILockerOptions) => new Locker(config);
+export const makeLock = (config?: ILockOptions) => new Lock(config);
 
-export default { makeLocker, Locker };
+export default { makeLock, Lock };

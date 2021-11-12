@@ -1,15 +1,15 @@
 import { lock } from '../code';
-import { Locker } from '../locker';
+import { Lock } from '../lock';
 import { wait } from '../wait';
 
-it('accept string locker-name and promise', async () => {
-  await lock('a-locker-name', wait(100));
+it('accept string lock-name and promise', async () => {
+  await lock('a-lock-name', wait(100));
 });
 
-it('accept locker and function', async () => {
-  const locker = new Locker();
+it('accept Lock and function', async () => {
+  const myLock = new Lock();
   const value = Symbol();
-  expect(await lock(locker, () => value)).toBe(value);
+  expect(await lock(myLock, () => value)).toBe(value);
 });
 
 it('accept symbol and async', async () => {

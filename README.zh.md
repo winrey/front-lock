@@ -1,4 +1,4 @@
-# front-locker
+# front-lock
 一个好用的前端锁🔐
 
 _不需要数据库支持_
@@ -9,11 +9,11 @@ _不需要数据库支持_
 
 ## 安装
 ```bash
-npm install front-locker
+npm install front-lock
 ```
 or
 ```bash
-yarn add front-locker
+yarn add front-lock
 ```
 
 ## 应用场景
@@ -45,7 +45,7 @@ async function operation2() {
 
 一种可行的做法是，建立全局事件，并且监听回调。但是这样无疑会不必要的增加代码复杂度。使用本库，只要略微修改ensureLogin函数即可解决。
 ```javascript
-import { lock } from 'front-locker'
+import { lock } from 'front-lock'
 
 let token = null
 
@@ -69,16 +69,16 @@ const ensureLogin = lock("login lock", async() => {
 ___最推荐使用这个函数___  
 简单易用：
 ```javascript
-import { lock } from 'front-locker'
+import { lock } from 'front-lock'
 
-lock("locker-name", async () => {
+lock("lock-name", async () => {
   // 在这里做一些异步操作
   await xxxx
 })
 ```
 需要在锁内代码执行完成后继续执行：
 ```javascript
-import { lock } from 'front-locker'
+import { lock } from 'front-lock'
 
 lock("another-lock-name", async () => {
   // 在这里做一些异步操作
@@ -93,10 +93,10 @@ lock("another-lock-name", async () => {
 ```
 如果你需要返回值（await 的用法也是支持的）:
 ```javascript
-import { lock } from 'front-locker'
+import { lock } from 'front-lock'
 
   // 既然用了await，记得要防止异步函数内哦
-  const value = await lock("locker-name", async () => {
+  const value = await lock("lock-name", async () => {
     // 在这里做一些异步操作
     return await 123
   })
@@ -105,7 +105,7 @@ import { lock } from 'front-locker'
 ```
 如果你是起名废，用Symbol作为锁名也许能拯救你
 ```javascript
-import { lock } from 'front-locker'
+import { lock } from 'front-lock'
 
 lock(Symbol(), new Promise(resolve => {
   // 锁内部也是支持Promise的
@@ -115,15 +115,15 @@ lock(Symbol(), new Promise(resolve => {
 你同样可以设置超时
 ```javascript
 import {
-  lock, wait, Locker,
-  LockerTimeoutError, 
+  lock, wait, Lock,
+  LockTimeoutError, 
   TicketUnvalidError
-} from 'front-locker'
+} from 'front-lock'
 
-// You can also use locker to create lock
-const locker = new Locker()
+// You can also use lock to create lock
+const myLock = new Lock()
 
-lock(locker, async () => {
+lock(myLock, async () => {
     // 在这里做一些异步操作
     wait(2000)
     
@@ -138,22 +138,21 @@ lock(locker, async () => {
 })
 ```
 
-### Locker
-如果你想要更加灵活的使用锁，你可以直接只用`Locker`类。用Locker类你可以直接控制锁内的队列，调用`locker.clear()`函数情况队列，或者调用`locker.release()`强制释放当前锁，更自由的实现逻辑
+### Lock
+如果你想要更加灵活的使用锁，你可以直接只用`Lock`类。用Lock类你可以直接控制锁内的队列，调用`lock.clear()`函数情况队列，或者调用`lock.release()`强制释放当前锁，更自由的实现逻辑
 ```javascript
 import {
-  wait, Locker,
-  LockerTimeoutError, 
+  wait, Lock,
   TicketUnvalidError
-} from 'front-locker'
+} from 'front-lock'
 
-const locker = new Locker()
+const myLock = new Lock()
 
 (async () => {
   // At the start of the async code you need to lock
-  const ticket = await locker.lock()
+  const ticket = await myLock.lock()
   // you can also set timeout here
-  // const ticket = await locker.lock(5000)
+  // const ticket = await myLock.lock(5000)
   try {
     // do something async
     // .......
@@ -161,7 +160,7 @@ const locker = new Locker()
   } finally {
     // At the end of the code you need to lock
     // you should make sure the unlock function will run in any situation, or set a timeout.
-    await locker.unlock(ticket)
+    await myLock.unlock(ticket)
   }
 
 

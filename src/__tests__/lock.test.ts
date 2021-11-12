@@ -1,20 +1,20 @@
-import { Locker, makeLocker } from '../locker';
+import { Lock, makeLock } from '../lock';
 import { wait } from '../wait';
 
-test('makeLocker Can Generate Locker', async () => {
-  const locker = makeLocker();
-  expect(locker).toBeDefined();
-  const ticket = await locker.lock();
+test('makeLock Can Generate Lock', async () => {
+  const myLock = makeLock();
+  expect(myLock).toBeDefined();
+  const ticket = await myLock.lock();
   expect(typeof ticket).toBe('symbol');
-  expect(locker.unlock(ticket)).toBeInstanceOf(Promise);
-  const state = locker.getlockState();
+  expect(myLock.unlock(ticket)).toBeInstanceOf(Promise);
+  const state = myLock.getlockState();
   expect(state).toBeDefined();
   expect(typeof state.locked).toBe('boolean');
   // expect(typeof state.waiting).toBeInstanceOf(Array)
   expect(state.lastRunningTime).toBeInstanceOf(Date);
   expect(state.lastLockTime).toBeInstanceOf(Date);
   expect(state.lockFrom).toBe(null);
-  locker.release();
+  myLock.release();
 });
 
 jest.setTimeout(10000);
@@ -32,20 +32,20 @@ describe('Need testFunc ', () => {
     result = [];
   });
 
-  const testFunc = async (locker: Locker, time: number, done?: CallableFunction) => {
+  const testFunc = async (myLock: Lock, time: number, done?: CallableFunction) => {
     const id = getNewIdVal();
     let stopLog = false;
     const thisResult = result;
     thisResult.push({ id, time, op: 'start' });
     // console.log(`[start] id:${id} time: ${time}`);
     try {
-      const ticket = await locker.lock(); // lock必须加await
+      const ticket = await myLock.lock(); // lock必须加await
       thisResult.push({ id, time, op: 'in-lock' });
       // console.log(`[in-lock] id:${id} time: ${time}`);
       await wait(time);
       thisResult.push({ id, time, op: 'out-lock' });
       // console.log(`[out-lock] id:${id} time: ${time}`);
-      await locker.unlock(ticket); // unlock加不加await都可
+      await myLock.unlock(ticket); // unlock加不加await都可
       thisResult.push({ id, time, op: 'end' });
       // console.log(`[end] id:${id} time: ${time}`);
       if (done) {
@@ -79,8 +79,8 @@ describe('Need testFunc ', () => {
     done();
   };
 
-  test('Single Locker Simple Test', (done) => {
-    const testLocker = makeLocker();
+  test('Single Lock Simple Test', (done) => {
+    const testLock = makeLock();
     const compared = [
       { id: 10001, time: 100, op: 'start' },
       { id: 10001, time: 100, op: 'in-lock' },
@@ -88,14 +88,14 @@ describe('Need testFunc ', () => {
       { id: 10001, time: 100, op: 'end' },
     ];
     const runTest = async () => {
-      testFunc(testLocker, 100, doneAndCheck(done, compared));
+      testFunc(testLock, 100, doneAndCheck(done, compared));
     };
     expect.assertions(1);
     runTest();
   });
 
-  test('Single Locker Serial Test', (done) => {
-    const testLocker = makeLocker();
+  test('Single Lock Serial Test', (done) => {
+    const testLock = makeLock();
     const compared = [
       { id: 10001, time: 100, op: 'start' },
       { id: 10002, time: 100, op: 'start' },
@@ -112,16 +112,16 @@ describe('Need testFunc ', () => {
     ];
     expect.assertions(1);
     const runTest = async () => {
-      testFunc(testLocker, 100);
-      testFunc(testLocker, 100);
-      testFunc(testLocker, 100, doneAndCheck(done, compared));
+      testFunc(testLock, 100);
+      testFunc(testLock, 100);
+      testFunc(testLock, 100, doneAndCheck(done, compared));
     };
 
     runTest();
   });
 
-  test('Single Locker Complex Test', (done) => {
-    const testLocker = makeLocker();
+  test('Single Lock Complex Test', (done) => {
+    const testLock = makeLock();
     const compared = [
       { id: 10001, time: 300, op: 'start' },
       { id: 10002, time: 301, op: 'start' },
@@ -161,19 +161,19 @@ describe('Need testFunc ', () => {
       { id: 10009, time: 300, op: 'end' },
     ];
     const runTest = async () => {
-      testFunc(testLocker, 300);
-      testFunc(testLocker, 301);
-      testFunc(testLocker, 302);
+      testFunc(testLock, 300);
+      testFunc(testLock, 301);
+      testFunc(testLock, 302);
       await wait(500);
-      testFunc(testLocker, 300);
+      testFunc(testLock, 300);
       await wait(1500);
-      testFunc(testLocker, 300);
+      testFunc(testLock, 300);
       await wait(400);
-      testFunc(testLocker, 300);
-      testFunc(testLocker, 300);
+      testFunc(testLock, 300);
+      testFunc(testLock, 300);
       await wait(200);
-      testFunc(testLocker, 300);
-      testFunc(testLocker, 300, doneAndCheck(done, compared));
+      testFunc(testLock, 300);
+      testFunc(testLock, 300, doneAndCheck(done, compared));
     };
 
     expect.assertions(1);
@@ -181,7 +181,7 @@ describe('Need testFunc ', () => {
   });
 
   test('Test Timeout', (done) => {
-    const testLocker = makeLocker({
+    const testLock = makeLock({
       timeout: 500,
       continueExcute: false,
     });
@@ -217,21 +217,21 @@ describe('Need testFunc ', () => {
     ];
     expect.assertions(1);
     const runTest = async () => {
-      testFunc(testLocker, 100);
-      testFunc(testLocker, 1000);
-      testFunc(testLocker, 300);
-      testFunc(testLocker, 300);
-      testFunc(testLocker, 300);
-      testFunc(testLocker, 300);
-      testFunc(testLocker, 100, doneAndCheck(done, compared));
+      testFunc(testLock, 100);
+      testFunc(testLock, 1000);
+      testFunc(testLock, 300);
+      testFunc(testLock, 300);
+      testFunc(testLock, 300);
+      testFunc(testLock, 300);
+      testFunc(testLock, 100, doneAndCheck(done, compared));
     };
 
     runTest();
   });
 
   test('Test Multi Lock', (done) => {
-    const locker1 = new Locker();
-    const locker2 = new Locker();
+    const lock1 = new Lock();
+    const lock2 = new Lock();
     const compared = [
       { id: 10001, time: 100, op: 'start' },
       { id: 10002, time: 100, op: 'start' },
@@ -252,12 +252,12 @@ describe('Need testFunc ', () => {
     ];
     expect.assertions(1);
     const runTest = async () => {
-      testFunc(locker1, 100);
-      testFunc(locker2, 100);
-      testFunc(locker1, 100);
-      testFunc(locker2, 200, doneAndCheck(done, compared));
+      testFunc(lock1, 100);
+      testFunc(lock2, 100);
+      testFunc(lock1, 100);
+      testFunc(lock2, 200, doneAndCheck(done, compared));
     };
 
     runTest();
   });
-});
+}

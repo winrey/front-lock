@@ -1,20 +1,20 @@
-# front-locker
-An useful async locker🔐 for frontend (web). 
+# front-lock
+An useful async lock🔐 for frontend (web). 
 
 _No need for Database._
 
 Also available on node.js.
 (But it doesn't work on the node.js program who use  multi-process)
 
-[中文文档](https://github.com/winrey/front-locker/blob/main/README.zh.md)
+[中文文档](https://github.com/winrey/front-lock/blob/main/README.zh.md)
 
 ## Install
 ```bash
-npm install front-locker
+npm install front-lock
 ```
 or
 ```bash
-yarn add front-locker
+yarn add front-lock
 ```
 
 ## Usage
@@ -22,9 +22,9 @@ yarn add front-locker
 ___RECOMMEND___  
 Simple to use:
 ```javascript
-import { lock } from 'front-locker'
+import { lock } from 'front-lock'
 
-lock("locker-name", async () => {
+lock("lock-name", async () => {
     // Do something async in the lock
     if (!userInfo) {
       userInfo = await login()
@@ -34,7 +34,7 @@ lock("locker-name", async () => {
 ```
 Do something after lock:
 ```javascript
-import { lock } from 'front-locker'
+import { lock } from 'front-lock'
 
 lock("another-lock-name", async () => {
   // Do something async in lock
@@ -49,10 +49,10 @@ lock("another-lock-name", async () => {
 ```
 If you need the return value (and you can also use await):
 ```javascript
-import { lock } from 'front-locker'
+import { lock } from 'front-lock'
 
 (async () => {
-  const value = await lock("locker-name", async () => {
+  const value = await lock("lock-name", async () => {
       // Do something async in lock
       return await 123
   })
@@ -62,7 +62,7 @@ import { lock } from 'front-locker'
 ```
 If you have difficult to name it, you can use symbol:
 ```javascript
-import { lock } from 'front-locker'
+import { lock } from 'front-lock'
 
 lock(Symbol(), new Promise(resolve => {
   // You can also use Promise here
@@ -72,15 +72,14 @@ lock(Symbol(), new Promise(resolve => {
 Also support to set timeout
 ```javascript
 import {
-  lock, wait, Locker,
-  LockerTimeoutError, 
+  lock, wait, Lock,
   TicketUnvalidError
-} from 'front-locker'
+} from 'front-lock'
 
-// You can also use locker to create lock
-const locker = new Locker()
+// You can also use Lock to create lock
+const myLock = new Lock()
 
-lock(locker, async () => {
+lock(myLock, async () => {
     // Do something async in lock
     wait(2000)
 }, { timeout: 1000, continueExcute: false }).catch(err => {
@@ -93,23 +92,21 @@ lock(locker, async () => {
 })
 ```
 
-### Locker
-If you want to more flexible, you can use `Locker` class directly. See more details in the code. 
+### Lock
+If you want to more flexible, you can use `Lock` class directly. See more details in the code. 
 ```javascript
 import {
-  wait, Locker,
-  LockerTimeoutError, 
-  TicketUnvalidError
-} from 'front-locker'
+  wait, Lock,
+} from 'front-lock'
 
-// You can also use locker to create lock
-const locker = new Locker()
+// You can also use lock to create lock
+const lock = new Lock()
 
 (async () => {
   // At the start of the async code you need to lock
-  const ticket = await locker.lock()
+  const ticket = await lock.lock()
   // you can also set timeout here
-  // const ticket = await locker.lock(5000)
+  // const ticket = await lock.lock(5000)
   try {
     // do something async
     // .......
@@ -117,7 +114,7 @@ const locker = new Locker()
   } finally {
     // At the end of the code you need to lock
     // you should make sure the unlock function will run in any situation, or set a timeout.
-    await locker.unlock(ticket)
+    await lock.unlock(ticket)
   }
 
 
@@ -127,7 +124,7 @@ const locker = new Locker()
 ## todo
 * [x] Trans to Typescript
 * [x] Write Test
-* [x] Test Multi-locker Situation
+* [x] Test Multi-lock Situation
 * [x] Add Timeout
 * [x] Test Timeout
 * [x] Test Error
