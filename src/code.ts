@@ -2,7 +2,7 @@ import { TicketUnvalidError } from "./error";
 import { ILockerOptions, Locker, makeLocker } from "./locker"
 
 
-let _lockers: {[key: string | symbol | number]: Locker} = {}
+const _lockers: {[key: string | symbol | number]: Locker} = {}
 
 export const lock = async <T>(
   locker: Locker | string | symbol | number, 

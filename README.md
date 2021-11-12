@@ -20,8 +20,11 @@ Simple to use:
 import { lock } from 'front-locker'
 
 lock("locker-name", async () => {
-    // Do something async in lock
-    await xxxx
+    // Do something async in the lock
+    if (!userInfo) {
+      userInfo = await login()
+    }
+
 })
 ```
 Do something after lock:
@@ -75,13 +78,9 @@ const locker = new Locker()
 lock(locker, async () => {
     // Do something async in lock
     wait(2000)
-}, { timeout: 1000 }).catch(err => {
-  if (err instanceof LockerTimeoutError) {
-    // handle this timeout Error when timeout just happened
-    // ......
-  }
+}, { timeout: 1000, continueExcute: false }).catch(err => {
   if (err instanceof TicketUnvalidError) {
-    // handle this timeout Error when lock function return
+    // handle this timeout Error when lock function return (if you set {continueExcute: false})
     // ......
   }
   // handle other Error
@@ -90,7 +89,36 @@ lock(locker, async () => {
 ```
 
 ### Locker
-If you want to more flexible, you can use `Locker` class directly. See more details in code 
+If you want to more flexible, you can use `Locker` class directly. See more details in the code. 
+```javascript
+import {
+  wait, Locker,
+  LockerTimeoutError, 
+  TicketUnvalidError
+} from 'front-locker'
+
+// You can also use locker to create lock
+const locker = new Locker()
+
+(async () => {
+  // At the start of the async code you need to lock
+  const ticket = await locker.lock()
+  // you can also set timeout here
+  // const ticket = await locker.lock(5000)
+  try {
+    // do something async
+    // .......
+    await wait(1000)
+  } finally {
+    // At the end of the code you need to lock
+    // you should make sure the unlock function will run in any situation, or set a timeout.
+    await locker.unlock(ticket)
+  }
+
+
+})()
+
+```
 ## todo
 * [x] Trans to Typescript
 * [x] Write Test

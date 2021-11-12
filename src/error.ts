@@ -1,3 +1,5 @@
+// tslint:disable max-classes-per-file
+
 export class LockerError extends Error {
     name = "LockerError"
 }

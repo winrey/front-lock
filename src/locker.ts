@@ -13,7 +13,7 @@ import {
   WrongTicketError 
 } from "./error";
 
-type LockTicketType = symbol
+export type LockTicketType = symbol
 export interface ILockerOptions {
   /**
    * ContinueExcute if the ticket has been released or timeout.
@@ -51,11 +51,13 @@ export class Locker implements ILockerOptions {
     resolve: CallableFunction,
     reject: CallableFunction,
   }} = {}
+  private timeoutSetting: {[ticket: LockTicketType]: number | undefined} = {}
+
   private lastRunningTime: null | Date = null
   private lastLockTime: null | Date = null
   private lockFrom: null | Date = null
 
-  private timeouts: {[ticket: LockTicketType]: number} = {}
+  private timeoutHandlers: {[ticket: LockTicketType]: number} = {}
 
   /**
    * 
@@ -80,6 +82,22 @@ export class Locker implements ILockerOptions {
     }
   }
 
+  private tryAddTimeout(ticket: LockTicketType) {
+    const timeout = this.timeoutSetting[ticket]
+    const actTime = timeout ?? this.timeout
+    if (actTime > 0) {
+      this.timeoutHandlers[ticket] = setTimeout(() => {
+        const { reject } = this.promises[ticket]
+        if (this.release(ticket)) {
+          if (this.throwLockError) {
+            reject(new LockerTimeoutError())
+          }
+          return
+        }
+      }, actTime);
+    }
+  }
+
   /**
    * Use at the start of the code need to lock.
    * This will lock the locker, or waiting here if the lock is busy.
@@ -89,39 +107,28 @@ export class Locker implements ILockerOptions {
    * @returns Return the ticket to unlock 返回用于解锁的ticket
    */
   lock(timeout?: number) {
-    const actTime = timeout ?? this.timeout
     return new Promise<LockTicketType>((resolve, reject) => {
       const ticket = Symbol("lock ticket")
+      this.timeoutSetting[ticket] = timeout
       this.promises[ticket]= { resolve, reject };
-      if (this.nowTicket) {
-        this.waitingList.push(ticket);
-      } else {
-        this.nowTicket = ticket;
+      this.waitingList.push(ticket);
+      if (!this.nowTicket) {
         const date = new Date();
-        this.lastRunningTime = date;
         this.lockFrom = date;
         this.lastLockTime = date;
-        setTimeout(() => resolve(ticket));
-        if (actTime > 0) {
-          this.timeouts[ticket] = setTimeout(() => {
-            if (this.release(ticket)) {
-              this.clearTicket(ticket)
-              this.throwLockError && reject(new LockerTimeoutError())
-              return
-            }
-          }, actTime);
-        }
+        this.tryCallNext(date)
       }
     })
   }
 
-  private tryCallNext() {
+  private tryCallNext(runningTime?: Date) {
     const next = this.waitingList.shift();
     if (next) {
       const { resolve: task } = this.promises[next]
       this.nowTicket = next;
-      this.lastRunningTime = new Date();
+      this.lastRunningTime = runningTime ?? new Date();
       setTimeout(() => task(next));
+      this.tryAddTimeout(next)
     } else {
       this.nowTicket = null;
       this.lockFrom = null;
@@ -142,7 +149,10 @@ export class Locker implements ILockerOptions {
           throw new WrongTicketError()
       }
       if (ticket !== this.nowTicket) {        // Timeout but still return
-        this.continueExcute ? resolve() : this.throwUnlockError && reject(new TicketUnvalidError())
+        if (this.continueExcute)
+          resolve()
+        else if (this.throwUnlockError) 
+          reject(new TicketUnvalidError())
         return
       }
       this.clearTicket(ticket)
@@ -153,14 +163,14 @@ export class Locker implements ILockerOptions {
 
   private clearTicket(ticket: LockTicketType) {
     if(this.waitingList.includes(ticket)) {
-      this.waitingList = [...this.waitingList.filter(t => t != ticket)]
+      this.waitingList = [...this.waitingList.filter(t => t !== ticket)]
     }
     if(this.promises[ticket]) {
       delete this.promises[ticket]
     }
-    if(this.timeouts[ticket]) {
-      clearTimeout(this.timeouts[ticket])
-      delete this.timeouts[ticket]
+    if(this.timeoutHandlers[ticket]) {
+      clearTimeout(this.timeoutHandlers[ticket])
+      delete this.timeoutHandlers[ticket]
     }
   }
 
@@ -171,10 +181,10 @@ export class Locker implements ILockerOptions {
    * 不等待当前返回，直接调用下一个。
    * 但是注意，这不会阻止异步返回后代码继续执行。
    * 一般来说请不要使用，除非你知道你在做什么。
-   * @param ticket Optional. Only release if now ticket equal this value if provided
+   * @param ticketOnly Optional. Only release if now ticket equal this value if provided
    */
-  release(ticket?: LockTicketType) {
-    if (!this.nowTicket || (ticket && ticket !== this.nowTicket)) {
+  release(ticketOnly?: LockTicketType) {
+    if (!this.nowTicket || (ticketOnly && ticketOnly !== this.nowTicket)) {
       return
     }
     this.clearTicket(this.nowTicket)
@@ -191,7 +201,7 @@ export class Locker implements ILockerOptions {
     this.nowTicket = null;
     this.waitingList = [];
     this.lockFrom = null;
-    Object.values<number>(this.timeouts).forEach(handler => {
+    Object.values<number>(this.timeoutHandlers).forEach(handler => {
       clearTimeout(handler)
     })
     if (this.throwLockError) {
@@ -199,7 +209,7 @@ export class Locker implements ILockerOptions {
         setTimeout(() => reject(new LockerClearError()))
       })
     }
-    this.timeouts = {}
+    this.timeoutHandlers = {}
     this.promises = {}
   };
 }
