@@ -1,6 +1,6 @@
 {
   "name": "front-locker",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "A userful locker for front-end.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
