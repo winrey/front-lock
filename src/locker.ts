@@ -7,8 +7,9 @@
  */
 
 import { LockerClearError, LockerTimeoutError, TicketUnvalidError, WrongTicketError } from './error';
+import { uuid } from './uuid';
 
-export type LockTicketType = symbol;
+export type LockTicketType = symbol | string;
 export interface ILockerOptions {
   /**
    * ContinueExcute if the ticket has been released or timeout.
@@ -34,11 +35,17 @@ export interface ILockerOptions {
   throwUnlockError?: boolean;
 }
 
+// support ES5
+if (!Symbol) {
+  Symbol = uuid as any
+}
+
 export class Locker implements ILockerOptions {
   continueExcute = true;
   timeout = 0;
   throwLockError = true;
   throwUnlockError = true;
+  es5 = false;
 
   private nowTicket: LockTicketType | null = null;
   private waitingList: LockTicketType[] = [];
@@ -140,7 +147,7 @@ export class Locker implements ILockerOptions {
    * @param ticket give the value return by lock()
    * @returns
    */
-  unlock(ticket: symbol) {
+  unlock(ticket: LockTicketType) {
     return new Promise<void>((resolve, reject) => {
       if (!ticket) {
         throw new WrongTicketError();
@@ -200,7 +207,7 @@ export class Locker implements ILockerOptions {
       clearTimeout(handler);
     });
     if (this.throwLockError) {
-      Object.values<{ reject: (err: any) => void }>(this.promises).forEach(({ reject }) => {
+      Object.values<{ reject: (err: any) => void }>(this.promises as any).forEach(({ reject }) => {
         setTimeout(() => reject(new LockerClearError()));
       });
     }
