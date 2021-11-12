@@ -127,9 +127,9 @@ const locker = new Locker()
 ## todo
 * [x] Trans to Typescript
 * [x] Write Test
-* [ ] Test Multi-locker Situation
+* [x] Test Multi-locker Situation
 * [x] Add Timeout
-* [ ] Test Timeout
-* [ ] Test Error
+* [x] Test Timeout
+* [x] Test Error
 * [ ] Support Worker
 

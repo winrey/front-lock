@@ -20,3 +20,16 @@ it('accept symbol and async', async () => {
   });
   expect(returned).toBe(value);
 });
+
+
+it('throw error and unlock when error', async () => {
+  const value = Symbol();
+  const codeInLock = (error=false) => lock(value, async () => {
+    wait(100);
+    if (error) throw "some error"
+    return value;
+  });
+  expect(codeInLock()).resolves.toBe(value);
+  expect(codeInLock(true)).rejects.toBe("some error");
+  expect(codeInLock()).resolves.toBe(value);
+});

@@ -228,4 +228,36 @@ describe('Need testFunc ', () => {
 
     runTest();
   });
+
+  test('Test Multi Lock', (done) => {
+    const locker1 = new Locker();
+    const locker2 = new Locker();
+    const compared = [
+      { id: 10001, time: 100, op: 'start' },
+      { id: 10002, time: 100, op: 'start' },
+      { id: 10003, time: 100, op: 'start' },
+      { id: 10004, time: 200, op: 'start' },
+      { id: 10001, time: 100, op: 'in-lock' },
+      { id: 10002, time: 100, op: 'in-lock' },
+      { id: 10001, time: 100, op: 'out-lock' },
+      { id: 10002, time: 100, op: 'out-lock' },
+      { id: 10001, time: 100, op: 'end' },
+      { id: 10003, time: 100, op: 'in-lock' },
+      { id: 10002, time: 100, op: 'end' },
+      { id: 10004, time: 200, op: 'in-lock' },
+      { id: 10003, time: 100, op: 'out-lock' },
+      { id: 10003, time: 100, op: 'end' },
+      { id: 10004, time: 200, op: 'out-lock' },
+      { id: 10004, time: 200, op: 'end' }
+    ];
+    expect.assertions(1);
+    const runTest = async () => {
+      testFunc(locker1, 100);
+      testFunc(locker2, 100);
+      testFunc(locker1, 100);
+      testFunc(locker2, 200, doneAndCheck(done, compared));
+    };
+
+    runTest();
+  });
 });
