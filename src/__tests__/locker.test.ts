@@ -248,7 +248,7 @@ describe('Need testFunc ', () => {
       { id: 10003, time: 100, op: 'out-lock' },
       { id: 10003, time: 100, op: 'end' },
       { id: 10004, time: 200, op: 'out-lock' },
-      { id: 10004, time: 200, op: 'end' }
+      { id: 10004, time: 200, op: 'end' },
     ];
     expect.assertions(1);
     const runTest = async () => {
