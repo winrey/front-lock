@@ -5,6 +5,7 @@ import error from './error';
 
 export const lock = code.lock;
 export const Locker = locker.Locker;
+export const makeLocker = locker.makeLocker;
 export const wait = waitFunc;
 export const LockerError = error.LockerError;
 export const WrongTicketError = error.WrongTicketError;
