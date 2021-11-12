@@ -260,4 +260,4 @@ describe('Need testFunc ', () => {
 
     runTest();
   });
-})
+});
