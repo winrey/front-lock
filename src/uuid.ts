@@ -1,6 +1,6 @@
-// @ts-ignore
+// tslint:disable no-bitwise
 
-export const uuid = function () {
+export const uuid = () => {
   const s = [];
   const hexDigits = "0123456789abcdef";
   for (let i = 0; i < 36; i++) {
@@ -10,6 +10,5 @@ export const uuid = function () {
   // @ts-ignore
   s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
   s[8] = s[13] = s[18] = s[23] = "-";
-  let uuid = s.join("").replace("-","");
-  return uuid
+  return s.join("").replace("-","");
 }
