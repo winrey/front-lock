@@ -17,6 +17,8 @@ yarn add front-lock
 ```
 
 ## 应用场景
+可能你会对为什么在单线程的js环境中需要锁而感到疑惑。请考虑以下场景：
+
 拿小程序举例，有的时候小程序一些操作需要完成登录鉴权  
 ```javascript
 let token = null
