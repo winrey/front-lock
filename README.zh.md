@@ -3,7 +3,9 @@
 
 _不需要数据库支持_
 
-可以用于小程序和Node.js（但由于目前没有共享数据库支持，暂时仅限单机单进程）  
+可以用于小程序和Node.js（但由于目前没有共享数据库支持，暂时仅限单机单进程）
+
+最低可以支持ES5  
 
 ## 安装
 ```bash
@@ -95,7 +97,7 @@ import { lock } from 'front-locker'
 
   // 既然用了await，记得要防止异步函数内哦
   const value = await lock("locker-name", async () => {
-    // 在这里做一些锁后需要处理的内容
+    // 在这里做一些异步操作
     return await 123
   })
   console.log(value)
@@ -122,8 +124,10 @@ import {
 const locker = new Locker()
 
 lock(locker, async () => {
-    // Do something async in lock
+    // 在这里做一些异步操作
     wait(2000)
+    
+    // continueExcute 这
 }, { timeout: 1000, continueExcute: false }).catch(err => {
   if (err instanceof TicketUnvalidError) {
     // handle this timeout Error when lock function return (if you set {continueExcute: false})
@@ -135,7 +139,7 @@ lock(locker, async () => {
 ```
 
 ### Locker
-If you want to more flexible, you can use `Locker` class directly. See more details in the code. 
+如果你想要更加灵活的使用锁，你可以直接只用`Locker`类。用Locker类你可以直接控制锁内的队列，调用`locker.clear()`函数情况队列，或者调用`locker.release()`强制释放当前锁，更自由的实现逻辑
 ```javascript
 import {
   wait, Locker,
@@ -143,7 +147,6 @@ import {
   TicketUnvalidError
 } from 'front-locker'
 
-// You can also use locker to create lock
 const locker = new Locker()
 
 (async () => {
@@ -165,12 +168,4 @@ const locker = new Locker()
 })()
 
 ```
-## todo
-* [x] Trans to Typescript
-* [x] Write Test
-* [ ] Test Multi-locker Situation
-* [x] Add Timeout
-* [ ] Test Timeout
-* [ ] Test Error
-* [ ] Support Worker
 
