@@ -10,11 +10,7 @@ export const lock = async <T>(
 ) => {
   const { timeout } = config;
 
-  if (
-    typeof codeLock === 'string' 
-    || typeof codeLock === 'symbol' 
-    || typeof codeLock === 'number'
-  ) {
+  if (typeof codeLock === 'string' || typeof codeLock === 'symbol' || typeof codeLock === 'number') {
     if (!_locks[codeLock]) {
       _locks[codeLock] = new Lock(config);
     }
