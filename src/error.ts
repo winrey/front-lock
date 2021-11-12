@@ -1,23 +1,23 @@
 // tslint:disable max-classes-per-file
 
 export class LockerError extends Error {
-    name = "LockerError"
+  name = 'LockerError';
 }
 
 export class WrongTicketError extends LockerError {
-    name = "WrongTicketError"
+  name = 'WrongTicketError';
 }
 
 export class TicketUnvalidError extends LockerError {
-    name = "TicketUnvalidError"
+  name = 'TicketUnvalidError';
 }
 
 export class LockerClearError extends LockerError {
-    name = "LockerClearError"
+  name = 'LockerClearError';
 }
 
 export class LockerTimeoutError extends LockerError {
-    name = "LockerTimeoutError"
+  name = 'LockerTimeoutError';
 }
 
 // export class TicketBeenReleasedError extends TicketExpiredError {
@@ -28,4 +28,4 @@ export class LockerTimeoutError extends LockerError {
 //     name = "TicketTimeoutError"
 // }
 
-export default { WrongTicketError, TicketUnvalidError, LockerClearError, LockerTimeoutError, LockerError }
+export default { WrongTicketError, TicketUnvalidError, LockerClearError, LockerTimeoutError, LockerError };

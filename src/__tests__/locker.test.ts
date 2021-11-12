@@ -2,61 +2,61 @@ import { Locker, makeLocker } from '../locker';
 import { wait } from '../wait';
 
 test('makeLocker Can Generate Locker', async () => {
-  const locker = makeLocker()
-  expect(locker).toBeDefined()
-  const ticket = await locker.lock()
-  expect(typeof ticket).toBe("symbol")
-  expect(locker.unlock(ticket)).toBeInstanceOf(Promise)
-  const state = locker.getlockState()
-  expect(state).toBeDefined()
-  expect(typeof state.locked).toBe("boolean")
+  const locker = makeLocker();
+  expect(locker).toBeDefined();
+  const ticket = await locker.lock();
+  expect(typeof ticket).toBe('symbol');
+  expect(locker.unlock(ticket)).toBeInstanceOf(Promise);
+  const state = locker.getlockState();
+  expect(state).toBeDefined();
+  expect(typeof state.locked).toBe('boolean');
   // expect(typeof state.waiting).toBeInstanceOf(Array)
-  expect(state.lastRunningTime).toBeInstanceOf(Date)
-  expect(state.lastLockTime).toBeInstanceOf(Date)
-  expect(state.lockFrom).toBe(null)
-  locker.release()
+  expect(state.lastRunningTime).toBeInstanceOf(Date);
+  expect(state.lastLockTime).toBeInstanceOf(Date);
+  expect(state.lockFrom).toBe(null);
+  locker.release();
 });
 
-jest.setTimeout(10000)
+jest.setTimeout(10000);
 
 describe('Need testFunc ', () => {
   // set id
-  let _id = 10000
-  let result: any[] = []
+  let _id = 10000;
+  let result: any[] = [];
   const getNewIdVal = () => {
-    return _id += 1
-  }
+    return (_id += 1);
+  };
 
   beforeEach(() => {
-    _id = 10000
-    result = []
-  })
+    _id = 10000;
+    result = [];
+  });
 
   const testFunc = async (locker: Locker, time: number, done?: CallableFunction) => {
     const id = getNewIdVal();
-    let stopLog = false
-    const thisResult = result
-    thisResult.push({ id, time, op: "start" })
+    let stopLog = false;
+    const thisResult = result;
+    thisResult.push({ id, time, op: 'start' });
     // console.log(`[start] id:${id} time: ${time}`);
     try {
       const ticket = await locker.lock(); // lock必须加await
-      thisResult.push({ id, time, op: "in-lock" })
+      thisResult.push({ id, time, op: 'in-lock' });
       // console.log(`[in-lock] id:${id} time: ${time}`);
       await wait(time);
-      thisResult.push({ id, time, op: "out-lock" })
+      thisResult.push({ id, time, op: 'out-lock' });
       // console.log(`[out-lock] id:${id} time: ${time}`);
       await locker.unlock(ticket); // unlock加不加await都可
-      thisResult.push({ id, time, op: "end" })
+      thisResult.push({ id, time, op: 'end' });
       // console.log(`[end] id:${id} time: ${time}`);
-      if (done) { 
-        stopLog = true
-        done()
+      if (done) {
+        stopLog = true;
+        done();
       }
     } catch (e: any) {
-      if (stopLog || e.name === "JestAssertionError") {
-        throw e
+      if (stopLog || e.name === 'JestAssertionError') {
+        throw e;
       }
-      thisResult.push({ id, time, op: "err: " + e.name || e })
+      thisResult.push({ id, time, op: 'err: ' + e.name || e });
       // console.error(`[ERROR] id:${id} time: ${time}\n`, e);
       // throw e
       // if (done) { done() }
@@ -64,21 +64,20 @@ describe('Need testFunc ', () => {
   };
   const exceptArray = (excepted: any[], value: any[]) => {
     // console.log(excepted)
-    const exceptStr = JSON.stringify(excepted)
-    const valueStr = JSON.stringify(value)
+    const exceptStr = JSON.stringify(excepted);
+    const valueStr = JSON.stringify(value);
     if (exceptStr !== valueStr) {
-      console.log("except: ", excepted)
-      console.log("tobe: ", value)
+      console.log('except: ', excepted);
+      console.log('tobe: ', value);
     }
-    expect(exceptStr).toBe(valueStr)
-  }
+    expect(exceptStr).toBe(valueStr);
+  };
   const doneAndCheck = (done: CallableFunction, compared: any[]) => () => {
     // expect(result).toEqualArray()
     // console.log(result)
-    exceptArray(result, compared)
-    done()
-  }
-
+    exceptArray(result, compared);
+    done();
+  };
 
   test('Single Locker Simple Test', (done) => {
     const testLocker = makeLocker();
@@ -86,15 +85,14 @@ describe('Need testFunc ', () => {
       { id: 10001, time: 100, op: 'start' },
       { id: 10001, time: 100, op: 'in-lock' },
       { id: 10001, time: 100, op: 'out-lock' },
-      { id: 10001, time: 100, op: 'end' }
-    ]
+      { id: 10001, time: 100, op: 'end' },
+    ];
     const runTest = async () => {
       testFunc(testLocker, 100, doneAndCheck(done, compared));
-    }
-    expect.assertions(1)
-    runTest()
-  })
-
+    };
+    expect.assertions(1);
+    runTest();
+  });
 
   test('Single Locker Serial Test', (done) => {
     const testLocker = makeLocker();
@@ -110,17 +108,17 @@ describe('Need testFunc ', () => {
       { id: 10002, time: 100, op: 'end' },
       { id: 10003, time: 100, op: 'in-lock' },
       { id: 10003, time: 100, op: 'out-lock' },
-      { id: 10003, time: 100, op: 'end' }
-    ]
-    expect.assertions(1)
+      { id: 10003, time: 100, op: 'end' },
+    ];
+    expect.assertions(1);
     const runTest = async () => {
       testFunc(testLocker, 100);
       testFunc(testLocker, 100);
       testFunc(testLocker, 100, doneAndCheck(done, compared));
-    }
+    };
 
-    runTest()
-  })
+    runTest();
+  });
 
   test('Single Locker Complex Test', (done) => {
     const testLocker = makeLocker();
@@ -160,8 +158,8 @@ describe('Need testFunc ', () => {
       { id: 10008, time: 300, op: 'end' },
       { id: 10009, time: 300, op: 'in-lock' },
       { id: 10009, time: 300, op: 'out-lock' },
-      { id: 10009, time: 300, op: 'end' }
-    ]
+      { id: 10009, time: 300, op: 'end' },
+    ];
     const runTest = async () => {
       testFunc(testLocker, 300);
       testFunc(testLocker, 301);
@@ -176,14 +174,14 @@ describe('Need testFunc ', () => {
       await wait(200);
       testFunc(testLocker, 300);
       testFunc(testLocker, 300, doneAndCheck(done, compared));
-    }
+    };
 
-    expect.assertions(1)
-    runTest()
-  })
+    expect.assertions(1);
+    runTest();
+  });
 
   test('Test Timeout', (done) => {
-    const testLocker = makeLocker({ 
+    const testLocker = makeLocker({
       timeout: 500,
       continueExcute: false,
     });
@@ -215,9 +213,9 @@ describe('Need testFunc ', () => {
       { id: 10006, time: 300, op: 'end' },
       { id: 10007, time: 100, op: 'in-lock' },
       { id: 10007, time: 100, op: 'out-lock' },
-      { id: 10007, time: 100, op: 'end' }
-    ]
-    expect.assertions(1)
+      { id: 10007, time: 100, op: 'end' },
+    ];
+    expect.assertions(1);
     const runTest = async () => {
       testFunc(testLocker, 100);
       testFunc(testLocker, 1000);
@@ -226,9 +224,8 @@ describe('Need testFunc ', () => {
       testFunc(testLocker, 300);
       testFunc(testLocker, 300);
       testFunc(testLocker, 100, doneAndCheck(done, compared));
-    }
+    };
 
-    runTest()
-  })
-
-})
+    runTest();
+  });
+});
